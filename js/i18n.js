@@ -398,6 +398,8 @@ function latin(s) {
     return ch === lo ? r : r.charAt(0).toUpperCase() + r.slice(1);
   });
 }
+const PN = p => (p ? (LANG === "en" && p.en ? p.en : N(p.name)) : ""); // име на место
+const BRAND = () => (LANG === "en" ? "Skopje" : "Скопје");
 const N = s => (LANG === "mk" ? s : latin(s));            // име на место / маало / човек
 const TY = s => (STR[LANG].types[s] || s);                  // вид на место
 const LX = obj => (obj && typeof obj === "object" ? obj[LANG] || obj.mk : obj); // {mk, en}

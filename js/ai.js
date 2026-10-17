@@ -152,7 +152,7 @@ const AI = (() => {
     if (!pick.length) return en ? "Hmm, nothing matches exactly. Try a different budget or day!" : "Хм, не најдов ништо што одговара точно на тоа. Пробај да ми кажеш поинаков буџет или ден!";
     const price = e => e.price ? `${e.price} ${en ? "MKD" : "ден."}` : (en ? "free" : "бесплатно");
     return (en ? "Here's what I'd suggest:\n" : "Еве што би ти предложил:\n")
-      + pick.map(e => `• ${e.title} — ${e.dateLabel} ${en ? "at" : "во"} ${e.time}, ${N(e.placeName)} (${price(e)})`).join("\n")
+      + pick.map(e => `• ${e.title} — ${e.dateLabel} ${en ? "at" : "во"} ${e.time}, ${PN(PLACES.find(x => x.id === e.place))} (${price(e)})`).join("\n")
       + (en ? "\n\n(Skopi is offline. Add a Groq key in Profile for smart suggestions.)" : "\n\n(Скопи е во офлајн режим. Внеси Groq клуч во Профил за паметни предлози.)");
   }
 
@@ -185,7 +185,7 @@ const AI = (() => {
       ], { maxTokens: 140, temperature: 0.8 });
     } catch {
       return LANG === "en"
-        ? `Break the routine this week: "${e.title}" at ${N(e.placeName)} (${N(e.hood)}), ${e.dateLabel} at ${e.time}. A new neighbourhood is waiting on your map!`
+        ? `Break the routine this week: "${e.title}" at ${PN(PLACES.find(x => x.id === e.place))} (${N(e.hood)}), ${e.dateLabel} at ${e.time}. A new neighbourhood is waiting on your map!`
         : `Оваа недела излези од навиката: „${e.title}“ во ${e.placeName} (${e.hood}), ${e.dateLabel.toLowerCase()} во ${e.time}. Ново маало на мапата те чека!`;
     }
   }
@@ -208,7 +208,7 @@ const AI = (() => {
         "историја": ["Чувар на старото Скопје", "Keeper of old Skopje"], "изложби": ["Око за уметност", "Eye for art"],
         "музика": ["Ноќна птица на сцената", "Night owl of the stage"], "архитектура": ["Ловец на згради", "Building hunter"],
       }[topTag] || ["Културен истражувач", "Culture explorer"];
-      const fav = stats.topPlace ? N(stats.topPlace) : (en ? "The city" : "Градот");
+      const fav = stats.topPlaceId ? PN(PLACES.find(x => x.id === stats.topPlaceId)) : (en ? "The city" : "Градот");
       return {
         persona: P[en ? 1 : 0],
         persona_line: en ? "Your outings have a clear favourite theme, and it shows." : "Твоите излези имаат јасна омилена тема, и тоа се гледа.",

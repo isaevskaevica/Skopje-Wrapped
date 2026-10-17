@@ -106,7 +106,7 @@ function ago(ts) {
 const hash = s => [...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
 function avatar(p, size = 40, attrs = "") {
   const st = `width:${size}px;height:${size}px;font-size:${Math.round(size * .42)}px;background:${p.color || "#F6F2EA"}`;
-  return p.photo ? `<img class="avatar" ${attrs} style="${st};object-fit:cover" src="${p.photo}" alt="">` : `<div class="avatar" ${attrs} style="${st}">${esc(N(p.name)[0] || "?")}</div>`;
+  return p.photo ? `<img class="avatar" ${attrs} style="${st};object-fit:cover" src="${p.photo}" alt="">` : `<div class="avatar" ${attrs} style="${st}">${esc(PN(p)[0] || "?")}</div>`;
 }
 const me = () => ({ ...state.user, color: "#F6F2EA" });
 function dist(a, b) { const dx = (a.lng - b.lng) * 82000, dy = (a.lat - b.lat) * 111000; return Math.sqrt(dx * dx + dy * dy); }
@@ -175,7 +175,7 @@ function renderOnboarding(view) {
       view.innerHTML = `<div class="onb">
         <div class="row onb-top"><img src="icon.svg" class="mini-orb" alt=""><div class="spacer"></div>${langSwitch()}</div>
         <div class="onb-hero">
-          <div class="h-display big">Скопје<br><span class="grad-text">Wrapped</span></div>
+          <div class="h-display big">${BRAND()}<br><span class="grad-text">Wrapped</span></div>
           <p class="lead">${t("onb.sub")}</p>
           <div class="features">
             <div><span class="fi" style="background:rgba(255,90,54,.15);color:var(--coral)">${icon("qr", 20)}</span>${t("onb.f1")}</div>
@@ -283,12 +283,12 @@ function renderMap(view) {
     const el = document.createElement("button");
     el.className = "pin2" + (n ? " visited" : "");
     el.style.setProperty("--c", TYPE_COLOR[p.type] || "#FF5A36");
-    el.setAttribute("aria-label", N(p.name));
+    el.setAttribute("aria-label", PN(p));
     const pop = document.createElement("div");
-    pop.innerHTML = `<div class="pop-title">${esc(N(p.name))}</div><div class="pop-sub">${esc(TY(p.type))}, ${esc(N(p.hood))}<br>${n ? t("map.visited", { n }) : t("map.new")}</div>
+    pop.innerHTML = `<div class="pop-title">${esc(PN(p))}</div><div class="pop-sub">${esc(TY(p.type))}, ${esc(N(p.hood))}<br>${n ? t("map.visited", { n }) : t("map.new")}</div>
       <div class="row"><button class="btn sm grad" data-ci>${t("map.checkin")}</button><button class="btn sm ghost" data-ask>${t("map.ask")}</button></div>`;
     $("[data-ci]", pop).onclick = () => checkIn(p.id);
-    $("[data-ask]", pop).onclick = () => askSkopi(t("map.askAbout", { p: N(p.name) }));
+    $("[data-ask]", pop).onclick = () => askSkopi(t("map.askAbout", { p: PN(p) }));
     markers[p.id] = new maplibregl.Marker({ element: el }).setLngLat([p.lng, p.lat])
       .setPopup(new maplibregl.Popup({ offset: 16, closeButton: false, maxWidth: "260px" }).setDOMContent(pop)).addTo(map);
   }
@@ -341,7 +341,7 @@ async function checkIn(placeId, extra = {}) {
   const sheet = openSheet(`
     <div class="checkin-hero">
       <div class="plus">${t("ci.plus")}</div>
-      <div class="h1" style="margin-top:8px">${esc(N(p.name))}</div>
+      <div class="h1" style="margin-top:8px">${esc(PN(p))}</div>
       <div style="font-weight:700;margin-top:4px">${esc(TY(p.type))}, ${esc(N(p.hood))}</div>
     </div>
     ${isNewHood ? `<div class="new-zone">${icon("map", 18)} ${t("ci.newHood", { h: esc(N(p.hood)), a: after.hoods, b: after.totalHoods })}</div>` : ""}
@@ -373,7 +373,7 @@ async function checkIn(placeId, extra = {}) {
 let scanner = null;
 function stopScanner() { if (scanner) { scanner.stop().catch(() => {}); scanner = null; } }
 function placeList(list, sub) {
-  return `<div class="place-pick">${list.map(p => `<button data-p="${p.id}">${dot(p.type)}<span><b>${esc(N(p.name))}</b><br><span class="muted">${sub(p)}</span></span></button>`).join("")}</div>`;
+  return `<div class="place-pick">${list.map(p => `<button data-p="${p.id}">${dot(p.type)}<span><b>${esc(PN(p))}</b><br><span class="muted">${sub(p)}</span></span></button>`).join("")}</div>`;
 }
 function openScanner() {
   const sheet = openSheet(`
@@ -421,7 +421,7 @@ $("#photoInput").addEventListener("change", async e => {
   try {
     const r = await AI.photoActivity(big, cands);
     const p = placeById(r.place_id) || cands[0];
-    $("#ph").innerHTML = `<b>${esc(r.title || r.kind)}</b><br>${esc(r.caption || "")}<br><br><span class="muted">${esc(N(p.name))}, ${esc(r.kind || TY(p.type))}</span>`;
+    $("#ph").innerHTML = `<b>${esc(r.title || r.kind)}</b><br>${esc(r.caption || "")}<br><br><span class="muted">${esc(PN(p))}, ${esc(r.kind || TY(p.type))}</span>`;
     $("#phActs").innerHTML = `<button class="btn grad block" id="ok">${icon("check", 20)} ${t("ph.save")}</button><button class="btn ghost block" id="other" style="margin-top:8px">${t("ph.other")}</button>`;
     $("#ok").onclick = () => { hideSheet(); checkIn(p.id, { photo: thumb, title: r.title, caption: r.caption, kind: r.kind }); };
     $("#other").onclick = () => manual(t("ph.otherQ"));
@@ -462,7 +462,7 @@ function renderNow(view) {
       return `<div class="ev" style="--c:${col}">
         <div class="ev-top"><span class="ev-day">${esc(e.dateLabel)}</span><span class="ev-time">${icon("clock", 14)} ${e.time}</span><div class="spacer"></div><span class="pill">${priceLabel(e.price)}</span></div>
         <div class="title">${esc(e.title)}</div>
-        <div class="ev-where">${icon("pin", 14)} ${esc(N(e.placeName))}, ${esc(N(e.hood))}</div>
+        <div class="ev-where">${icon("pin", 14)} ${esc(PN(placeById(e.place)))}, ${esc(N(e.hood))}</div>
         <div class="ev-going">${avatarsStack(e.id)}<span>${t("now.going", { n: going })}</span></div>
         <div class="acts">
           <button class="btn sm ${joined ? "" : "grad"}" data-join="${e.id}">${joined ? icon("check", 16) + " " + t("now.joined") : t("now.join")}</button>
@@ -471,7 +471,7 @@ function renderNow(view) {
     }).join("")}</div>
 
     ${suggest.length ? `<div class="sec-label">${t("now.suggest")}</div>
-    <div class="people-strip">${suggest.map(p => `<div class="person-card">${avatar(p, 52, `data-person="${p.id}"`)}<b>${esc(N(p.name))}</b><span class="muted">${esc(N(p.hood || ""))}</span><button class="btn sm solid" data-follow="${p.id}">${t("fr.follow")}</button></div>`).join("")}</div>` : ""}
+    <div class="people-strip">${suggest.map(p => `<div class="person-card">${avatar(p, 52, `data-person="${p.id}"`)}<b>${esc(PN(p))}</b><span class="muted">${esc(N(p.hood || ""))}</span><button class="btn sm solid" data-follow="${p.id}">${t("fr.follow")}</button></div>`).join("")}</div>` : ""}
 
     <div class="sec-label">${t("now.friends")}</div>
     ${!state.following.length ? `<div class="empty card"><p class="muted">${t("now.noFriends")}</p><button class="btn sm solid" id="findFr" style="margin-top:12px">${t("now.findFriends")}</button></div>` : ""}
@@ -479,7 +479,7 @@ function renderNow(view) {
       const pl = placeById(p.place);
       const legend = p.mine && (st.placeCount[pl.id] || 0) >= 2;
       return `<div class="post">
-        <div class="head">${avatar(p.person, 40, p.mine ? "" : `data-person="${p.person.id}"`)}<div style="flex:1;min-width:0"><div><b>${esc(N(p.person.name))}</b> <span class="muted">${t("now.was")}</span> <b>${esc(N(pl.name))}</b></div><div class="what">${icon("pin", 13)} ${esc(N(pl.hood))}, ${ago(p.ts)}</div></div></div>
+        <div class="head">${avatar(p.person, 40, p.mine ? "" : `data-person="${p.person.id}"`)}<div style="flex:1;min-width:0"><div><b>${esc(N(p.person.name))}</b> <span class="muted">${t("now.was")}</span> <b>${esc(PN(pl))}</b></div><div class="what">${icon("pin", 13)} ${esc(N(pl.hood))}, ${ago(p.ts)}</div></div></div>
         <div class="body">
           ${p.title ? `<div style="font-weight:800">${esc(p.title)}</div>` : ""}
           ${p.photo ? `<img class="photo" src="${p.photo}" alt="">` : ""}
@@ -500,7 +500,7 @@ function renderNow(view) {
   bindReactions(view);
   $$("[data-follow]", view).forEach(b => b.onclick = () => { toggleFollow(b.dataset.follow); renderKeepScroll(); });
   $$("[data-person]", view).forEach(b => b.onclick = () => openPerson(b.dataset.person));
-  $$("[data-same]", view).forEach(b => b.onclick = () => askSkopi(t("now.wantQ", { p: N(placeById(b.dataset.same).name) })));
+  $$("[data-same]", view).forEach(b => b.onclick = () => askSkopi(t("now.wantQ", { p: PN(placeById(b.dataset.same)) })));
   $("#findFr")?.addEventListener("click", () => openFriends());
 }
 // Реакции како на Facebook: допри за избор од повеќе емоџиња
@@ -553,7 +553,7 @@ async function openCrewMatch(ev) {
   openSheet(`
     <div class="muted" style="font-weight:700">${t("crew.found")}</div>
     <div class="h1" style="margin:6px 0 4px">${esc(ev.title)}</div>
-    <div class="muted">${esc(ev.dateLabel)}, ${ev.time}, ${esc(N(ev.placeName))}</div>
+    <div class="muted">${esc(ev.dateLabel)}, ${ev.time}, ${esc(PN(placeById(ev.place)))}</div>
     <div class="group-grid" style="margin-top:16px">
       <div class="card">${avatar(me())}<div><b>${esc(state.user.name)}</b><div class="muted" style="font-size:11.5px">${t("crew.you")}</div></div></div>
       ${group.map(g => `<div class="card">${avatar(g)}<div><b>${esc(N(g.name))}</b><div class="muted" style="font-size:11.5px">${g.interests.filter(i => mine.includes(i)).map(interestLabel).map(esc).join(", ") || t("crew.new")}</div></div></div>`).join("")}
@@ -584,19 +584,19 @@ async function memberSays(crewId, person) {
   crew.msgs.push({ from: person.id, text, ts: Date.now() }); save(); refreshChat(crewId);
 }
 function msgHTML(m) {
-  if (m.from === "skopi") return `<div class="cmsg skopi"><img src="icon.svg" alt=""><div><div class="cname">Скопи, ${t("crew.ice").toLowerCase()}</div><div class="cbubble">${esc(m.text)}</div></div></div>`;
+  if (m.from === "skopi") return `<div class="cmsg skopi"><img src="icon.svg" alt=""><div><div class="cname">${t("tab.skopi")}, ${t("crew.ice").toLowerCase()}</div><div class="cbubble">${esc(m.text)}</div></div></div>`;
   if (m.from === "me") return `<div class="cmsg mine"><div class="cbubble">${esc(m.text)}</div></div>`;
   const p = personById(m.from) || { name: "?", color: "#999" };
-  return `<div class="cmsg">${avatar(p, 30)}<div><div class="cname">${esc(N(p.name))}</div><div class="cbubble">${esc(m.text)}</div></div></div>`;
+  return `<div class="cmsg">${avatar(p, 30)}<div><div class="cname">${esc(PN(p))}</div><div class="cbubble">${esc(m.text)}</div></div></div>`;
 }
 function openCrewChat(crewId) {
   const crew = state.crews.find(c => c.id === crewId); if (!crew) return;
   const ev = eventById(crew.eventId);
   const members = crew.members.map(personById).filter(Boolean);
   const sheet = openSheet(`
-    <div class="row"><div style="flex:1;min-width:0"><div class="h2">${esc(ev?.title || "")}</div><div class="muted" style="font-size:12.5px">${ev ? `${esc(ev.dateLabel)}, ${ev.time}, ${esc(N(ev.placeName))}` : ""}</div></div><button class="icon-btn" id="xCh">${icon("close", 20)}</button></div>
+    <div class="row"><div style="flex:1;min-width:0"><div class="h2">${esc(ev?.title || "")}</div><div class="muted" style="font-size:12.5px">${ev ? `${esc(ev.dateLabel)}, ${ev.time}, ${esc(PN(placeById(ev.place)))}` : ""}</div></div><button class="icon-btn" id="xCh">${icon("close", 20)}</button></div>
     <div class="row" style="margin-top:10px"><span class="stack-av">${[me(), ...members].map(p => avatar(p, 28)).join("")}</span><span class="muted" style="font-size:12.5px">${t("crew.members", { n: members.length + 1 })}</span></div>
-    ${ev ? `<div class="meet">${icon("pin", 16)}<div><b>${t("crew.meet")}</b><br>${t("crew.meetAt", { p: esc(N(ev.placeName)), t: meetTime(ev.time) })}</div></div>` : ""}
+    ${ev ? `<div class="meet">${icon("pin", 16)}<div><b>${t("crew.meet")}</b><br>${t("crew.meetAt", { p: esc(PN(placeById(ev.place))), t: meetTime(ev.time) })}</div></div>` : ""}
     <div class="cmsgs" id="cmsgs">${crew.msgs.map(msgHTML).join("")}</div>
     <form class="ask-row" id="cF"><input class="field" id="cIn" placeholder="${esc(t("crew.msgPh"))}" autocomplete="off"><button class="send" type="submit">${icon("send", 20)}</button></form>`, "chat-sheet");
   sheet.dataset.crew = crewId;
@@ -618,7 +618,7 @@ function refreshChat(crewId) {
 }
 function showTyping(crewId, p) {
   const sheet = $(".sheet-card"); if ($("#sheet").hidden || sheet.dataset.crew !== crewId) return;
-  const box = $("#cmsgs"); box.insertAdjacentHTML("beforeend", `<div class="cmsg">${avatar(p, 30)}<div><div class="cname">${esc(N(p.name))}</div><div class="cbubble"><span class="typing"><i></i><i></i><i></i></span></div></div></div>`);
+  const box = $("#cmsgs"); box.insertAdjacentHTML("beforeend", `<div class="cmsg">${avatar(p, 30)}<div><div class="cname">${esc(PN(p))}</div><div class="cbubble"><span class="typing"><i></i><i></i><i></i></span></div></div></div>`);
   box.scrollTop = box.scrollHeight;
 }
 
@@ -639,7 +639,7 @@ function addFriendByName(name) {
     state.invited.push(p);
   }
   if (!state.following.includes(p.id)) state.following.push(p.id);
-  save(); confetti(); toast(t("fr.added", { n: N(p.name) }));
+  save(); confetti(); toast(t("fr.added", { n: PN(p) }));
 }
 function openPerson(id) {
   const p = personById(id); if (!p) return;
@@ -647,7 +647,7 @@ function openPerson(id) {
   const on = state.following.includes(id);
   const sheet = openSheet(`
     <div class="row"><div class="spacer"></div><button class="icon-btn" id="xP">${icon("close", 20)}</button></div>
-    <div class="person-head">${avatar(p, 76)}<div class="h1">${esc(N(p.name))}</div><div class="muted">${p.hood ? icon("pin", 13) + " " + esc(N(p.hood)) : ""}</div>
+    <div class="person-head">${avatar(p, 76)}<div class="h1">${esc(PN(p))}</div><div class="muted">${p.hood ? icon("pin", 13) + " " + esc(N(p.hood)) : ""}</div>
       <div class="tags">${p.interests.map(i => `<span class="tag">${esc(interestLabel(i))}</span>`).join("")}</div></div>
     <div class="stack" style="margin-top:16px">
       <button class="btn grad block" id="inv">${icon("calendar", 18)} ${t("person.invite")}</button>
@@ -655,11 +655,11 @@ function openPerson(id) {
     </div>
     <div id="invList"></div>
     <div class="sec-label">${t("person.recent")}</div>
-    ${acts.length ? acts.map(a => { const pl = placeById(a.place); return `<div class="act-row">${dot(pl.type)}<div><b>${esc(N(pl.name))}</b><div class="muted" style="font-size:12.5px">${esc(TY(pl.type))}, ${ago(Date.now() - a.hoursAgo * 36e5)}</div></div></div>`; }).join("") : `<p class="muted">${t("person.none")}</p>`}`);
+    ${acts.length ? acts.map(a => { const pl = placeById(a.place); return `<div class="act-row">${dot(pl.type)}<div><b>${esc(PN(pl))}</b><div class="muted" style="font-size:12.5px">${esc(TY(pl.type))}, ${ago(Date.now() - a.hoursAgo * 36e5)}</div></div></div>`; }).join("") : `<p class="muted">${t("person.none")}</p>`}`);
   $("#xP").onclick = closeSheet;
   $("#fol").onclick = () => { toggleFollow(id); openPerson(id); };
   $("#inv").onclick = () => {
-    $("#invList").innerHTML = `<div class="sec-label">${t("person.pick")}</div><div class="place-pick">${getEvents().map(e => `<button data-ev="${e.id}">${dot(e.type)}<span><b>${esc(e.title)}</b><br><span class="muted">${esc(e.dateLabel)}, ${e.time}, ${esc(N(e.placeName))}</span></span></button>`).join("")}</div>`;
+    $("#invList").innerHTML = `<div class="sec-label">${t("person.pick")}</div><div class="place-pick">${getEvents().map(e => `<button data-ev="${e.id}">${dot(e.type)}<span><b>${esc(e.title)}</b><br><span class="muted">${esc(e.dateLabel)}, ${e.time}, ${esc(PN(placeById(e.place)))}</span></span></button>`).join("")}</div>`;
     $$("[data-ev]", sheet).forEach(b => b.onclick = () => createCrew(eventById(b.dataset.ev), [id]));
     $("#invList").scrollIntoView({ behavior: "smooth", block: "start" });
   };
@@ -681,7 +681,7 @@ function openFriends(tab = "search") {
       $("#frList").innerHTML = list.length ? list.map(p => {
         const common = p.interests.filter(i => state.user.interests.includes(i)).map(interestLabel);
         const on = state.following.includes(p.id);
-        return `<div class="person-row">${avatar(p, 44, `data-person="${p.id}"`)}<div style="flex:1;min-width:0"><b>${esc(N(p.name))}</b><div class="muted" style="font-size:12.5px">${esc(N(p.hood || ""))}${common.length ? (p.hood ? ", " : "") + t("fr.common", { x: esc(common.join(", ")) }) : ""}</div></div>
+        return `<div class="person-row">${avatar(p, 44, `data-person="${p.id}"`)}<div style="flex:1;min-width:0"><b>${esc(PN(p))}</b><div class="muted" style="font-size:12.5px">${esc(N(p.hood || ""))}${common.length ? (p.hood ? ", " : "") + t("fr.common", { x: esc(common.join(", ")) }) : ""}</div></div>
           <button class="btn sm ${on ? "ghost" : "solid"}" data-f="${p.id}">${on ? t("fr.followingBtn") : t("fr.follow")}</button></div>`;
       }).join("") : `<p class="muted" style="padding:16px 0">${t("fr.none")}</p>`;
       $$("[data-f]", body).forEach(b => b.onclick = () => { toggleFollow(b.dataset.f); draw(); });
@@ -706,7 +706,7 @@ function askSkopi(q) { hideSheet(); location.hash = "#skopi"; setTimeout(() => s
 function renderSkopi(view) {
   if (!state.chat.length) state.chat.push({ role: "assistant", content: t("sk.hello", { n: state.user.name }) });
   view.innerHTML = `<div class="chat">
-    <div class="chat-head"><img src="icon.svg" alt=""><div><div class="h2">Скопи</div><div class="status ${AI.hasKey() ? "on" : ""}">${AI.hasKey() ? t("sk.status") : t("me.aiOff")}</div></div><div class="spacer"></div><button class="chip" id="clr">${icon("refresh", 15)} ${t("sk.new")}</button></div>
+    <div class="chat-head"><img src="icon.svg" alt=""><div><div class="h2">${t("tab.skopi")}</div><div class="status ${AI.hasKey() ? "on" : ""}">${AI.hasKey() ? t("sk.status") : t("me.aiOff")}</div></div><div class="spacer"></div><button class="chip" id="clr">${icon("refresh", 15)} ${t("sk.new")}</button></div>
     <div class="chat-log" id="log">${state.chat.map(m => `<div class="msg ${m.role === "user" ? "me" : "bot"}">${esc(m.content)}</div>`).join("")}</div>
     <div class="chat-suggest">${["sk.s1", "sk.s2", "sk.s3", "sk.s4"].map(k => `<button class="chip" data-s="${esc(t(k))}">${esc(t(k))}</button>`).join("")}</div>
     <form class="chat-input" id="f"><input id="q" placeholder="${esc(t("sk.ph"))}" autocomplete="off"><button class="send" type="submit">${icon("send", 20)}</button></form>
@@ -737,7 +737,7 @@ function renderWrappedHome(view) {
   const st = stats();
   view.innerHTML = `<div class="screen">
     <div class="wr-hero">
-      <div class="h-display" style="font-size:46px;margin:4px 0 12px">Скопје<br><span class="grad-text">Wrapped</span></div>
+      <div class="h-display" style="font-size:46px;margin:4px 0 12px">${BRAND()}<br><span class="grad-text">Wrapped</span></div>
       <p class="muted">${t("wr.sub")}</p>
     </div>
     <div class="stat-row">
@@ -761,7 +761,7 @@ async function playWrapped() {
     `<div class="slide s-ink"><div class="big">${t("wr.s1", { n: esc(state.user.name) })}</div></div>`,
     `<div class="slide s-coral"><div class="slabel">${t("wr.outings")}</div><div class="huge">${st.visits}</div><div class="line">${st.night ? t("wr.night", { n: st.night }) : t("wr.noNight")}</div></div>`,
     `<div class="slide s-sun"><div class="slabel">${t("wr.hoodsFound")}</div><div class="huge">${st.hoods}<span style="font-size:40px">/${st.totalHoods}</span></div><div class="line">${esc(w.hoods_line || "")}</div><div style="font-weight:800">${st.hoodNames.map(N).map(esc).join(", ")}</div></div>`,
-    `<div class="slide s-violet"><div class="slabel">${t("wr.place")}</div><div class="big">${esc(N(st.topPlace || "-"))}</div><div class="line">${esc(w.fav_line)}</div></div>`,
+    `<div class="slide s-violet"><div class="slabel">${t("wr.place")}</div><div class="big">${esc(st.topPlaceId ? PN(placeById(st.topPlaceId)) : "-")}</div><div class="line">${esc(w.fav_line)}</div></div>`,
     `<div class="slide s-mint"><div class="slabel">${t("wr.persona")}</div><div class="big">${esc(w.persona)}</div><div class="line">${esc(w.persona_line)}</div></div>`,
     `<div class="slide s-ink"><img src="icon.svg" style="width:70px"><div class="big" style="font-size:30px">${esc(w.roast)}</div><div class="line muted">${esc(w.next)}</div></div>`,
     `<div class="slide s-ink" style="justify-content:flex-start;padding-top:60px;gap:12px">${shareCardHTML(st, w)}
@@ -803,11 +803,11 @@ function hoodSVG(st) {
 }
 function shareCardHTML(st, w) {
   return `<div class="share-card" id="shareCard">
-    <div class="sc-top"><div class="sc-brand">СКОПЈЕ <span class="grad-text">WRAPPED</span></div></div>
+    <div class="sc-top"><div class="sc-brand">${BRAND().toUpperCase()} <span class="grad-text">WRAPPED</span></div></div>
     <div class="sc-persona">${t("wr.is", { n: esc(state.user.name) })}<br><span class="grad-text">${esc(w.persona)}</span></div>
     <div class="sc-hex">${hoodSVG(st)}</div>
     <div class="sc-stats"><div><b>${st.visits}</b><span>${t("wr.visits")}</span></div><div><b>${st.hoods}/${st.totalHoods}</b><span>${t("wr.hoods")}</span></div><div><b>${st.places}</b><span>${t("wr.places")}</span></div></div>
-    <div class="sc-roast">„${esc(w.roast)}“ (Скопи)</div>
+    <div class="sc-roast">„${esc(w.roast)}“ (${t("tab.skopi")})</div>
   </div>`;
 }
 async function downloadCard() {
@@ -854,7 +854,7 @@ function renderMe(view) {
     </div>
 
     <div class="sec-label">${t("me.friends")}</div>
-    <div class="friends-row">${friends.map(p => `<button class="fr" data-person="${p.id}">${avatar(p, 48)}<span>${esc(N(p.name))}</span></button>`).join("")}<button class="fr add" id="addF2"><span class="avatar" style="width:48px;height:48px;background:var(--ink-3);color:var(--paper)">${icon("plus", 20)}</span><span>${t("me.addFriends")}</span></button></div>
+    <div class="friends-row">${friends.map(p => `<button class="fr" data-person="${p.id}">${avatar(p, 48)}<span>${esc(PN(p))}</span></button>`).join("")}<button class="fr add" id="addF2"><span class="avatar" style="width:48px;height:48px;background:var(--ink-3);color:var(--paper)">${icon("plus", 20)}</span><span>${t("me.addFriends")}</span></button></div>
 
     ${state.crews.length ? `<div class="sec-label">${t("crew.mine")}</div>${state.crews.slice().reverse().map(c => { const ev = eventById(c.eventId); return `<button class="act-row wide" data-open-crew="${c.id}">${icon("chat", 18)}<div><b>${esc(ev?.title || "")}</b><div class="muted" style="font-size:12.5px">${ev ? `${esc(ev.dateLabel)}, ${ev.time}` : ""}</div></div></button>`; }).join("")}` : ""}
 
