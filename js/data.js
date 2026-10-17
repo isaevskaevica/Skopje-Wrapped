@@ -83,69 +83,95 @@ const PLACES = [
   },
 ];
 
-// Зони (маала) — центри за именување на хексагоналните зони на мапата
+
+// Маала (центри) — за статистика „истражени маала“ и Маалската лига
 const HOODS = [
   ["Центар", 41.996, 21.431], ["Стара Чаршија", 42.0015, 21.437], ["Чаир", 42.014, 21.444],
-  ["Бит Пазар", 42.005, 21.442], ["Топаана", 42.008, 21.430], ["Дебар Маало", 41.996, 21.420],
-  ["Капиштец", 41.991, 21.410], ["Карпош", 42.004, 21.396], ["Тафталиџе", 41.998, 21.383],
-  ["Влае", 42.006, 21.366], ["Козле", 41.988, 21.392], ["Водно", 41.975, 21.418],
-  ["Кисела Вода", 41.979, 21.438], ["Пролет", 41.988, 21.446], ["Аеродром", 41.986, 21.466],
-  ["Ново Лисиче", 41.983, 21.484], ["Автокоманда", 42.001, 21.470], ["Гази Баба", 42.013, 21.465],
-  ["Бутел", 42.030, 21.446], ["Маџари", 41.998, 21.490], ["Ѓорче Петров", 42.012, 21.350],
-  ["Шуто Оризари", 42.040, 21.425], ["Ѓуро Ѓаковиќ", 42.024, 21.430],
+  ["Топаана", 42.006, 21.430], ["Дебар Маало", 41.996, 21.420], ["Капиштец", 41.991, 21.410],
+  ["Карпош", 42.004, 21.396], ["Тафталиџе", 41.998, 21.383], ["Влае", 42.006, 21.366],
+  ["Козле", 41.988, 21.392], ["Водно", 41.975, 21.418], ["Кисела Вода", 41.979, 21.438],
+  ["Пролет", 41.988, 21.446], ["Аеродром", 41.986, 21.466], ["Ново Лисиче", 41.983, 21.484],
+  ["Автокоманда", 42.001, 21.470], ["Гази Баба", 42.013, 21.465], ["Бутел", 42.030, 21.446],
+  ["Маџари", 41.998, 21.490], ["Ѓорче Петров", 42.012, 21.350], ["Шуто Оризари", 42.040, 21.425],
+  ["Ѓуро Ѓаковиќ", 42.024, 21.430],
 ];
 
 // Примерни настани за демо (датумите се релативни на денешниот ден).
 // ЗАМЕНЕТЕ ГИ со вистински настани кога ќе ги соберете!
 const EVENT_TEMPLATES = [
-  { day: 0, time: "19:00", title: "Хакатон демо вечер", place: "base42", type: "Технологија", price: 0, tags: ["технологија", "заедница"] },
-  { day: 0, time: "20:30", title: "Џез сесија во живо", place: "debar-maalo", type: "Концерт", price: 300, tags: ["музика", "џез"] },
-  { day: 0, time: "18:00", title: "Вечерно водење низ изложбата", place: "msu", type: "Изложба", price: 100, tags: ["уметност", "изложби"] },
-  { day: 1, time: "11:00", title: "Пешачка тура: Старата чаршија", place: "bezisten", type: "Тура", price: 0, tags: ["историја", "архитектура"] },
-  { day: 1, time: "20:00", title: "Балетска вечер", place: "opera", type: "Претстава", price: 400, tags: ["театар", "музика"] },
-  { day: 2, time: "19:30", title: "Изложба на млади уметници — отворање", place: "daut-pasin-amam", type: "Изложба", price: 0, tags: ["уметност", "изложби"] },
-  { day: 3, time: "21:00", title: "Електронска ноќ", place: "univerzalna-sala", type: "Концерт", price: 500, tags: ["музика", "електронска"] },
-  { day: 4, time: "18:30", title: "Работилница: фотографија на маалото", place: "bit-pazar", type: "Работилница", price: 200, tags: ["фотографија", "работилници"] },
-  { day: 5, time: "17:00", title: "Книжевно читање во градина", place: "cifte-amam", type: "Книжевност", price: 0, tags: ["книжевност"] },
-  { day: 6, time: "12:00", title: "Фестивал на улична храна и музика", place: "gradski-park", type: "Фестивал", price: 0, tags: ["фестивали", "храна", "музика"] },
+  { day: 0, time: "19:00", place: "base42", price: 0, tags: ["технологија", "заедница"], kind: "tech",
+    title: { mk: "Хакатон демо вечер", en: "Hackathon demo night" } },
+  { day: 0, time: "20:30", place: "debar-maalo", price: 300, tags: ["музика", "џез"], kind: "concert",
+    title: { mk: "Џез сесија во живо", en: "Live jazz session" } },
+  { day: 0, time: "18:00", place: "msu", price: 100, tags: ["уметност", "изложби"], kind: "exhibition",
+    title: { mk: "Вечерно водење низ изложбата", en: "Evening guided tour of the exhibition" } },
+  { day: 1, time: "11:00", place: "bezisten", price: 0, tags: ["историја", "архитектура"], kind: "tour",
+    title: { mk: "Пешачка тура: Старата чаршија", en: "Walking tour: the Old Bazaar" } },
+  { day: 1, time: "20:00", place: "opera", price: 400, tags: ["театар", "музика"], kind: "show",
+    title: { mk: "Балетска вечер", en: "Ballet night" } },
+  { day: 2, time: "19:30", place: "daut-pasin-amam", price: 0, tags: ["уметност", "изложби"], kind: "exhibition",
+    title: { mk: "Изложба на млади уметници — отворање", en: "Young artists exhibition — opening" } },
+  { day: 3, time: "21:00", place: "univerzalna-sala", price: 500, tags: ["музика", "електронска"], kind: "concert",
+    title: { mk: "Електронска ноќ", en: "Electronic night" } },
+  { day: 4, time: "18:30", place: "bit-pazar", price: 200, tags: ["фотографија", "работилници"], kind: "workshop",
+    title: { mk: "Работилница: фотографија на маалото", en: "Workshop: photographing the neighbourhood" } },
+  { day: 5, time: "17:00", place: "cifte-amam", price: 0, tags: ["книжевност"], kind: "literature",
+    title: { mk: "Книжевно читање", en: "Literary reading" } },
+  { day: 6, time: "12:00", place: "gradski-park", price: 0, tags: ["фестивали", "храна", "музика"], kind: "festival",
+    title: { mk: "Фестивал на улична храна и музика", en: "Street food & music festival" } },
 ];
 
+// Интереси (id → тагови од местата за поклопување)
 const INTERESTS = [
-  "Концерти", "Изложби", "Театар", "Кино", "Историја", "Архитектура",
-  "Книжевност", "Џез", "Електронска", "Работилници", "Фестивали", "Улична уметност",
+  { id: "concerts", icon: "🎸", mk: "Концерти", en: "Concerts", tags: ["музика", "концерти"] },
+  { id: "exhibitions", icon: "🖼️", mk: "Изложби", en: "Exhibitions", tags: ["изложби", "уметност"] },
+  { id: "theatre", icon: "🎭", mk: "Театар", en: "Theatre", tags: ["театар"] },
+  { id: "cinema", icon: "🎬", mk: "Кино", en: "Cinema", tags: ["кино"] },
+  { id: "history", icon: "🏛️", mk: "Историја", en: "History", tags: ["историја"] },
+  { id: "architecture", icon: "🏙️", mk: "Архитектура", en: "Architecture", tags: ["архитектура"] },
+  { id: "literature", icon: "📚", mk: "Книжевност", en: "Literature", tags: ["книжевност"] },
+  { id: "jazz", icon: "🎷", mk: "Џез", en: "Jazz", tags: ["џез", "музика"] },
+  { id: "electronic", icon: "🎧", mk: "Електронска", en: "Electronic", tags: ["електронска", "музика"] },
+  { id: "workshops", icon: "🛠️", mk: "Работилници", en: "Workshops", tags: ["работилници", "технологија"] },
+  { id: "festivals", icon: "🎪", mk: "Фестивали", en: "Festivals", tags: ["фестивали"] },
+  { id: "street-art", icon: "🎨", mk: "Улична уметност", en: "Street art", tags: ["уметност"] },
 ];
 
-// Демо пријатели во фидот
-const FRIENDS = [
-  { name: "Ана", color: "#FF5A36", interests: ["Изложби", "Архитектура", "Кино"] },
-  { name: "Марко", color: "#3DDC97", interests: ["Концерти", "Електронска", "Фестивали"] },
-  { name: "Елена", color: "#7B61FF", interests: ["Театар", "Книжевност", "Историја"] },
-  { name: "Бојан", color: "#FFD23F", interests: ["Џез", "Концерти", "Работилници"] },
-  { name: "Сара", color: "#36C5F0", interests: ["Изложби", "Улична уметност", "Кино"] },
-  { name: "Давид", color: "#FF8FB1", interests: ["Историја", "Архитектура", "Фестивали"] },
+// Заедница (демо корисници). following: дали ги следиш на почеток
+const PEOPLE = [
+  { id: "ana", name: "Ана", color: "#FF5A36", interests: ["exhibitions", "architecture", "cinema"], hood: "Центар", following: true },
+  { id: "marko", name: "Марко", color: "#3DDC97", interests: ["concerts", "electronic", "festivals"], hood: "Карпош", following: true },
+  { id: "elena", name: "Елена", color: "#7B61FF", interests: ["theatre", "literature", "history"], hood: "Дебар Маало", following: true },
+  { id: "bojan", name: "Бојан", color: "#FFD23F", interests: ["jazz", "concerts", "workshops"], hood: "Аеродром", following: false },
+  { id: "sara", name: "Сара", color: "#36C5F0", interests: ["exhibitions", "street-art", "cinema"], hood: "Капиштец", following: false },
+  { id: "david", name: "Давид", color: "#FF8FB1", interests: ["history", "architecture", "festivals"], hood: "Кисела Вода", following: false },
+  { id: "arta", name: "Арта", color: "#B28DFF", interests: ["literature", "exhibitions", "jazz"], hood: "Чаир", following: false },
+  { id: "filip", name: "Филип", color: "#5EE6C9", interests: ["electronic", "workshops", "street-art"], hood: "Гази Баба", following: false },
+  { id: "jana", name: "Јана", color: "#FF9E5E", interests: ["theatre", "cinema", "concerts"], hood: "Центар", following: false },
 ];
 
-// Активности на пријателите (hoursAgo = пред колку часа)
-const FRIEND_ACTIVITY = [
-  { who: "Ана", place: "msu", hoursAgo: 2, mood: "😍", note: "Изложбата горе на вториот кат е неверојатна." },
-  { who: "Марко", place: "univerzalna-sala", hoursAgo: 20, mood: "🔥", note: "Звукот вечерва беше на друго ниво." },
-  { who: "Елена", place: "opera", hoursAgo: 28, mood: "😍", note: "Прв пат на балет. Сигурно не последен." },
-  { who: "Бојан", place: "debar-maalo", hoursAgo: 45, mood: "🙂", note: "Џез во мал бар, пет луѓе и три инструменти." },
-  { who: "Сара", place: "daut-pasin-amam", hoursAgo: 70, mood: "😍", note: "Светлото низ куполите е посебно искуство." },
-  { who: "Давид", place: "kale", hoursAgo: 96, mood: "🙂", note: "Зајдисонце од Калето. Цел град пред тебе." },
+// Активности на заедницата (hoursAgo = пред колку часа)
+const PEOPLE_ACTIVITY = [
+  { who: "ana", place: "msu", hoursAgo: 2, mood: "😍", note: { mk: "Изложбата горе на вториот кат е неверојатна.", en: "The exhibition on the second floor is incredible." } },
+  { who: "arta", place: "bit-pazar", hoursAgo: 6, mood: "🙂", note: { mk: "Најдобрите фотографии ги направив овде.", en: "Took my best photos here." } },
+  { who: "marko", place: "univerzalna-sala", hoursAgo: 20, mood: "🔥", note: { mk: "Звукот вечерва беше на друго ниво.", en: "The sound tonight was on another level." } },
+  { who: "elena", place: "opera", hoursAgo: 28, mood: "😍", note: { mk: "Прв пат на балет. Сигурно не последен.", en: "First time at the ballet. Definitely not the last." } },
+  { who: "bojan", place: "debar-maalo", hoursAgo: 45, mood: "🙂", note: { mk: "Џез во мал бар, пет луѓе и три инструменти.", en: "Jazz in a tiny bar, five people and three instruments." } },
+  { who: "sara", place: "daut-pasin-amam", hoursAgo: 70, mood: "😍", note: { mk: "Светлото низ куполите е посебно искуство.", en: "The light through the domes is something else." } },
+  { who: "david", place: "kale", hoursAgo: 96, mood: "🙂", note: { mk: "Зајдисонце од Калето. Цел град пред тебе.", en: "Sunset from the Fortress. The whole city in front of you." } },
 ];
 
-// Маалска лига (демо)
+// Маалска лига (демо поени)
 const LEAGUE = [
   ["Центар", 412], ["Карпош", 365], ["Дебар Маало", 298], ["Аеродром", 241],
-  ["Кисела Вода", 187], ["Чаир", 142], ["Гази Баба", 96], ["Бутел", 54],
+  ["Кисела Вода", 187], ["Чаир", 142], ["Капиштец", 120], ["Гази Баба", 96], ["Бутел", 54],
 ];
 
 const BADGES = [
-  { id: "first", icon: "🎟️", name: "Прв излез", test: s => s.visits >= 1 },
-  { id: "three-zones", icon: "🧭", name: "Истражувач", desc: "3 зони", test: s => s.zones >= 3 },
-  { id: "history", icon: "🏛️", name: "Чувар на историјата", desc: "3 историски места", test: s => (s.tagCount["историја"] || 0) >= 3 },
-  { id: "art", icon: "🎨", name: "Око за уметност", desc: "3 изложби", test: s => (s.tagCount["изложби"] || 0) >= 3 },
-  { id: "night", icon: "🌙", name: "Ноќна птица", desc: "посета по 20 ч.", test: s => s.night >= 1 },
-  { id: "group", icon: "👯", name: "Во екипа", desc: "излез со екипа", test: s => s.groups >= 1 },
+  { id: "first", icon: "🎟️", test: s => s.visits >= 1 },
+  { id: "explorer", icon: "🧭", test: s => s.hoods >= 3 },
+  { id: "history", icon: "🏛️", test: s => (s.tagCount["историја"] || 0) >= 3 },
+  { id: "art", icon: "🎨", test: s => (s.tagCount["изложби"] || 0) >= 3 },
+  { id: "night", icon: "🌙", test: s => s.night >= 1 },
+  { id: "crew", icon: "👯", test: s => s.groups >= 1 },
 ];

@@ -61,9 +61,9 @@ a { color: inherit; }
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
   text-decoration: none; font-size: 11px; font-weight: 600; color: var(--muted);
 }
-#tabbar a .ti { font-size: 19px; line-height: 1; }
+#tabbar a .ico { width: 22px; height: 22px; }
 #tabbar a.active { color: var(--paper); }
-#tabbar a.active .ti { color: var(--coral); }
+#tabbar a.active .ico { color: var(--coral); }
 .skopi-orb {
   width: 50px; height: 50px; margin-top: -22px; border-radius: 50%;
   display: grid; place-items: center;
@@ -319,3 +319,116 @@ a { color: inherit; }
 @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* =====================================================================
+   v2: икони, онбординг, вистинска мапа, Актуелно, пријатели, профил
+   ===================================================================== */
+.ico { flex: none; display: inline-block; vertical-align: -0.2em; }
+.btn .ico { vertical-align: middle; }
+.icon-btn { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: var(--ink-3); border: 1px solid var(--line); font-size: 18px; font-weight: 800; flex: none; }
+.icon-btn.glass { background: rgba(14, 14, 18, .82); backdrop-filter: blur(12px); height: auto; border-radius: 18px; width: 52px; }
+.link-btn { color: var(--muted); font-weight: 800; font-size: 13px; }
+
+.seg { display: inline-flex; padding: 4px; border-radius: 999px; background: var(--ink-2); border: 1px solid var(--line); gap: 2px; }
+.seg button { padding: 7px 14px; border-radius: 999px; font-weight: 800; font-size: 13px; color: var(--muted); }
+.seg button.on { background: var(--paper); color: var(--ink); }
+.seg.wide { display: flex; width: 100%; }
+.seg.wide button { flex: 1; padding: 10px; }
+
+/* Онбординг */
+.onb-top { padding-bottom: 8px; }
+.mini-orb { width: 40px; height: 40px; animation: bob 3s ease-in-out infinite; }
+.onb-hero { justify-content: center; }
+.onb-hero .big { font-size: 54px; }
+.lead { font-size: 16.5px; color: #CFCBD6; line-height: 1.5; }
+.features { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+.features > div { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 14.5px; }
+.fi { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; flex: none; }
+.onb-body { flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 10px 0 20px; }
+.dots { display: flex; gap: 6px; }
+.dots i { width: 8px; height: 8px; border-radius: 8px; background: var(--line); transition: width .2s; }
+.dots i.on { width: 24px; background: var(--grad); }
+.interest-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.interest { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-radius: 16px; background: var(--ink-2); border: 1.5px solid var(--line); font-weight: 800; font-size: 14px; text-align: left; transition: transform .1s; }
+.interest span { font-size: 20px; }
+.interest.on { border-color: var(--coral); background: rgba(255, 90, 54, .12); }
+.interest:active { transform: scale(.97); }
+.chips.small .chip { padding: 6px 11px; font-size: 12px; }
+
+/* Мапа */
+.leaflet-container { background: #e9e5dc; }
+.map-top { align-items: stretch; }
+.explored .big { font-family: var(--display); font-weight: 900; font-size: 26px; line-height: 1; }
+.explored .big .of { font-size: 15px; color: var(--muted); }
+.explored .big.sm { font-size: 20px; }
+.explored .lbl { font-size: 11px; font-weight: 700; color: var(--muted); margin-top: 3px; }
+.pin { width: 38px; height: 38px; border-radius: 50% 50% 50% 4px; transform: rotate(-45deg); background: #fff; border: 3px solid var(--c); display: grid; place-items: center; box-shadow: 0 4px 12px rgba(0,0,0,.28); }
+.pin span { transform: rotate(45deg); font-size: 17px; line-height: 1; }
+.pin.visited { background: var(--c); border-color: #fff; box-shadow: 0 0 0 4px rgba(255, 176, 32, .45), 0 6px 16px rgba(0,0,0,.3); }
+.me-dot { width: 18px; height: 18px; border-radius: 50%; background: #2F7BFF; border: 3px solid #fff; box-shadow: 0 0 0 6px rgba(47, 123, 255, .25); }
+.pop-title { font-family: var(--display); font-weight: 700; font-size: 15px; }
+.pop-sub { font-size: 12px; color: var(--muted); margin: 4px 0 10px; }
+.leaflet-control-attribution { background: rgba(255,255,255,.7) !important; color: #555 !important; }
+.leaflet-control-attribution a { color: #555 !important; }
+
+/* Чекирање */
+.ask-row { display: flex; gap: 8px; margin-top: 10px; }
+.ask-row .field { height: 48px; font-size: 15px; }
+.send { width: 48px; height: 48px; border-radius: 50%; background: var(--grad); color: var(--ink); display: grid; place-items: center; flex: none; }
+.qa { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); white-space: pre-wrap; }
+.place-pick button { display: flex; gap: 12px; align-items: center; }
+.pp-ico { width: 38px; height: 38px; border-radius: 12px; background: var(--ink-3); display: grid; place-items: center; font-size: 18px; flex: none; }
+.new-zone .ico { color: var(--mint); }
+
+/* Актуелно */
+.ev { display: flex; flex-direction: column; border-top: 4px solid var(--c); }
+.ev .stripe { display: none; }
+.ev-top { display: flex; align-items: center; gap: 8px; }
+.ev-day { font-family: var(--display); font-weight: 700; font-size: 13px; color: var(--c); }
+.ev-time { font-size: 12.5px; font-weight: 700; color: var(--muted); display: inline-flex; align-items: center; gap: 4px; }
+.ev-where { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+.ev-going { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12.5px; font-weight: 700; color: var(--muted); }
+.stack-av { display: inline-flex; }
+.stack-av .avatar { border: 2px solid var(--ink-2); margin-left: -7px; }
+.stack-av .avatar:first-child { margin-left: 0; }
+.ev .acts { margin-top: auto; padding-top: 14px; }
+.people-strip { display: flex; gap: 10px; overflow-x: auto; margin: 10px -16px 0; padding: 0 16px 4px; }
+.people-strip::-webkit-scrollbar { display: none; }
+.person-card { flex: 0 0 128px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 10px; border-radius: 18px; background: var(--ink-2); border: 1px solid var(--line); text-align: center; font-size: 13px; }
+.person-card .btn { margin-top: 6px; width: 100%; }
+.empty { margin-top: 10px; text-align: center; }
+
+/* Пријатели */
+.search { display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 16px; border-radius: 999px; background: var(--ink-2); border: 1px solid var(--line); color: var(--muted); }
+.search input { flex: 1; background: none; border: 0; outline: none; height: 100%; }
+.people-list { margin-top: 6px; }
+.person-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.invite-card { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 20px; border-radius: 24px; background: var(--grad); color: var(--ink); }
+.qrbox { width: 200px; height: 200px; padding: 10px; background: #fff; border-radius: 18px; margin-top: 6px; }
+.qrbox svg { width: 100%; height: 100%; }
+
+/* Скопи */
+.status { font-size: 12px; color: var(--muted); }
+.status.on { color: var(--mint); }
+
+/* Wrapped + профил */
+.wr-hero { padding: 18px; border-radius: 26px; background: radial-gradient(120% 90% at 100% 0%, rgba(123, 97, 255, .35), transparent 60%), radial-gradient(90% 80% at 0% 100%, rgba(255, 90, 54, .28), transparent 60%), var(--ink-2); border: 1px solid var(--line); }
+.stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+.stat-row > div { background: var(--ink-2); border: 1px solid var(--line); border-radius: 18px; padding: 14px 8px; text-align: center; }
+.stat-row b { display: block; font-family: var(--display); font-size: 24px; line-height: 1.1; }
+.stat-row span { font-size: 11.5px; font-weight: 700; color: var(--muted); }
+.profile-head { display: flex; gap: 16px; align-items: center; }
+.section-h { display: flex; align-items: center; margin: 26px 0 10px; }
+.friends-row { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 4px; }
+.friends-row::-webkit-scrollbar { display: none; }
+.fr { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; flex: 0 0 auto; max-width: 70px; text-align: center; }
+.fr.add { color: var(--muted); }
+.league .lname { width: 112px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.edit-photo { display: flex; align-items: center; gap: 16px; margin-top: 10px; }
+.edit-photo label { cursor: pointer; }
+.avatar { display: grid; place-items: center; }
+.btn, .chip { white-space: nowrap; }
+.ev { flex-basis: 82%; }
+.ev .acts .btn { padding: 0 13px; }
+.profile-head + .stat-row + .row .btn { font-size: 14px; padding: 0 12px; }
+.chat-head .chip { padding: 8px 12px; }
