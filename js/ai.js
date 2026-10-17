@@ -25,7 +25,7 @@ const AI = (() => {
   };
 
   const cfg = {
-    get key() { return store.get("sw_groq_key", ""); },
+    get key() { return store.get("sw_groq_key", "") || (typeof window !== "undefined" && window.SKOPI_KEY) || ""; },
     set key(v) { store.set("sw_groq_key", v.trim()); },
     get textModel() { return store.get("sw_text_model", PREFERRED_TEXT[0]); },
     set textModel(v) { store.set("sw_text_model", v); },
@@ -41,7 +41,8 @@ const AI = (() => {
 - Користи САМО факти, места и настани од ЗНАЕЊЕТО што ти е дадено. Никогаш не измислувај настани, датуми, цени или историски факти.
 - Ако нешто не е во знаењето, кажи искрено дека не си сигурен и предложи нешто што е во знаењето.
 - Не ја споделувај локацијата на други корисници и не коментирај изглед на луѓе.
-- Пишувај граматички точно и природно.`;
+- Пишувај граматички точно и природно.
+- Не користи емоџиња.`;
   const langRule = () => LANG === "en"
     ? "\nIMPORTANT: Reply in ENGLISH, friendly and witty. Write Macedonian place names in Latin script (e.g. Kurshumli An, Debar Maalo)."
     : "\nВАЖНО: Одговарај на македонски, на кирилица.";
@@ -236,5 +237,18 @@ const AI = (() => {
     }
   }
 
-  return { cfg, hasKey, testConnection, placeStory, skopiReply, photoActivity, coach, wrapped, icebreaker };
+  // ---------- 7. Член на екипата одговара во групниот разговор ----------
+  async function memberReply(member, crew, lastMsgs) {
+    try {
+      return await chat([
+        { role: "system", content: `Ти си ${member.name}, млад човек од Скопје, член на мала екипа што оди заедно на настан. Одговараш во групен чат: многу кратко (1 реченица), природно, пријателски, без емоџиња. Интереси: ${member.interests.map(i => (INTERESTS.find(x => x.id === i) || {}).mk || i).join(", ")}.` + langRule() },
+        { role: "user", content: `Настан: ${crew.eventTitle} во ${crew.placeName}, ${crew.when}.\nПоследни пораки:\n${lastMsgs.map(m => `${m.name}: ${m.text}`).join("\n")}\n\nНапиши го твојот следен одговор.` },
+      ], { maxTokens: 70, temperature: 0.9 });
+    } catch {
+      const r = t("crew.r");
+      return r[Math.floor(Math.random() * r.length)];
+    }
+  }
+
+  return { cfg, hasKey, testConnection, placeStory, skopiReply, photoActivity, coach, wrapped, icebreaker, memberReply };
 })();
