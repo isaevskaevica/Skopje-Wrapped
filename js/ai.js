@@ -175,16 +175,15 @@ const AI = (() => {
   }
 
   // ---------- 4. AI-коуч: предизвик по мерка ----------
-  async function coach(user, stats, events) {
+  async function coach(user, stats, target) {
+    const e = target;
     try {
       return await chat([
-        { role: "system", content: SYS() + "\nТи си AI-коуч, како планот за тренинг на Strava. Дај ЕДЕН конкретен предизвик за оваа недела што го турка корисникот во НОВО маало каде не бил, користејќи настан или место од знаењето. Максимум 2 реченици. Почни директно, без поздрав." },
-        { role: "system", content: knowledge({ events }) + "\n" + userCtx(user, stats) },
-        { role: "user", content: "Кој е мојот предизвик за оваа недела?" },
-      ], { maxTokens: 160, temperature: 0.8 });
+        { role: "system", content: SYS() + "\nТи си AI-коуч, како планот за тренинг на Strava. Напиши ЕДЕН краток предизвик за оваа недела (максимум 2 реченици) за дадениот настан, што го носи корисникот во маало каде уште не бил. Кажи зошто му одговара според интересите. Почни директно, без поздрав. Не измислувај други детали." },
+        { role: "system", content: userCtx(user, stats) },
+        { role: "user", content: `Настан: ${e.titleMk}, ${e.dateLabel} во ${e.time}, ${e.placeName} (маало ${e.hood}), ${e.price ? e.price + " ден." : "бесплатно"}.` },
+      ], { maxTokens: 140, temperature: 0.8 });
     } catch {
-      const visited = new Set(stats.hoodNames);
-      const e = events.find(ev => !visited.has(ev.hood)) || events[0];
       return LANG === "en"
         ? `Break the routine this week: "${e.title}" at ${N(e.placeName)} (${N(e.hood)}), ${e.dateLabel} at ${e.time}. A new neighbourhood is waiting on your map!`
         : `Оваа недела излези од навиката: „${e.title}“ во ${e.placeName} (${e.hood}), ${e.dateLabel.toLowerCase()} во ${e.time}. Ново маало на мапата те чека!`;

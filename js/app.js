@@ -12,6 +12,9 @@ const TYPE_COLOR = { "Музеј": "#7B61FF", "Галерија": "#E2558A", "С
 const BADGE_ICON = { first: "ticket", explorer: "map", history: "landmark", art: "palette", night: "moon", crew: "users" };
 const MAP_STYLE = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"; // истиот Carto стил што го користи mapcn
 const STATE_V = 3;
+const REACTIONS = ["❤️", "👏", "😍", "😂", "😮", "🔥"];
+const hoodLabel = h => (h === "other" ? t("hood.other") : N(h || "-"));
+const hoodChips = sel => [...HOODS.map(([h]) => h), "other"].map(h => `<button class="chip ${sel === h ? "on" : ""}" data-h="${esc(h)}">${esc(hoodLabel(h))}</button>`).join("");
 
 // ---------------------------------------------------------------------
 //  Состојба (се чува во прелистувачот)
@@ -20,6 +23,7 @@ const fresh = () => ({ v: STATE_V, user: null, visits: [], joined: [], kudos: []
 let state = (() => { try { const s = JSON.parse(localStorage.getItem("sw_state") || "null"); return s && s.v === STATE_V ? s : fresh(); } catch { return fresh(); } })();
 const save = () => { try { localStorage.setItem("sw_state", JSON.stringify(state)); } catch {} };
 let pending = null;
+state.reactions = state.reactions || {};
 const allPeople = () => [...PEOPLE, ...state.invited];
 const personById = id => allPeople().find(p => p.id === id);
 
@@ -211,7 +215,7 @@ function renderOnboarding(view) {
         <div class="onb-body">
           <div class="h1">${t("onb.hood")}</div>
           <p class="muted">${t("onb.hoodSub")}</p>
-          <div class="chips">${HOODS.map(([h]) => `<button class="chip ${hood === h ? "on" : ""}" data-h="${esc(h)}">${esc(N(h))}</button>`).join("")}</div>
+          <div class="chips">${hoodChips(hood)}</div>
         </div>
         <button class="btn grad block" id="go" ${hood ? "" : "disabled"}>${t("onb.go")}</button>
       </div>`;
@@ -248,7 +252,7 @@ function renderMap(view) {
       <button class="icon-btn glass" id="locate" aria-label="locate">${icon("locate", 20)}</button>
     </div>
     <div class="map-actions">
-      <div class="coach"><img src="icon.svg" alt=""><div><div class="coach-h">${t("map.coach")}</div><div class="t" id="coachTxt"><span class="typing"><i></i><i></i><i></i></span></div></div></div>
+      ${sessionStorage.getItem("sw_coach_hide") ? "" : `<div class="coach" id="coach"><img src="icon.svg" alt=""><div style="flex:1;min-width:0"><div class="row" style="gap:6px"><div class="coach-h">${t("map.coach")}</div><div class="spacer"></div><button class="coach-x" id="coachX" aria-label="close">${icon("close", 16)}</button></div><div class="t" id="coachTxt"><span class="typing"><i></i><i></i><i></i></span></div><button class="coach-go" id="coachGo" hidden>${icon("pin", 14)} ${t("map.show")}</button></div></div>`}
       <div class="fab-row">
         <button class="btn grad" id="scanBtn">${icon("qr", 20)} ${t("map.scan")}</button>
         <button class="btn" id="photoBtn">${icon("camera", 20)} ${t("map.photo")}</button>
@@ -285,7 +289,7 @@ function renderMap(view) {
       <div class="row"><button class="btn sm grad" data-ci>${t("map.checkin")}</button><button class="btn sm ghost" data-ask>${t("map.ask")}</button></div>`;
     $("[data-ci]", pop).onclick = () => checkIn(p.id);
     $("[data-ask]", pop).onclick = () => askSkopi(t("map.askAbout", { p: N(p.name) }));
-    new maplibregl.Marker({ element: el }).setLngLat([p.lng, p.lat])
+    markers[p.id] = new maplibregl.Marker({ element: el }).setLngLat([p.lng, p.lat])
       .setPopup(new maplibregl.Popup({ offset: 16, closeButton: false, maxWidth: "260px" }).setDOMContent(pop)).addTo(map);
   }
   let meMarker = null;
@@ -299,15 +303,28 @@ function renderMap(view) {
   };
 }
 
+function coachTarget() {
+  const st = stats(), events = getEvents();
+  const tags = state.user.interests.flatMap(i => (INTERESTS.find(x => x.id === i) || {}).tags || []);
+  const fresh = events.filter(e => !st.hoodNames.includes(e.hood));
+  const pool = fresh.length ? fresh : events;
+  return pool.slice().sort((a, b) => b.tags.filter(x => tags.includes(x)).length - a.tags.filter(x => tags.includes(x)).length || a.day - b.day)[0];
+}
+const markers = {};
 async function loadCoach() {
-  const key = new Date().toDateString() + "|" + state.visits.length + "|" + LANG;
+  if (!$("#coach")) return;
+  const target = coachTarget();
+  $("#coachX").onclick = () => { sessionStorage.setItem("sw_coach_hide", "1"); $("#coach").remove(); };
+  const go = $("#coachGo");
+  go.onclick = () => { if (!map) return; map.flyTo({ center: [target.lng, target.lat], zoom: 15.2 }); const m = markers[target.place]; if (m && !m.getPopup().isOpen()) m.togglePopup(); };
+  const key = new Date().toDateString() + "|" + state.visits.length + "|" + LANG + "|" + target.id;
   let cached = null; try { cached = JSON.parse(localStorage.getItem("sw_coach") || "null"); } catch {}
   let txt = cached?.key === key ? cached.txt : null;
   if (!txt) {
-    txt = await AI.coach(state.user, stats(), getEvents());
+    txt = await AI.coach(state.user, stats(), target);
     try { localStorage.setItem("sw_coach", JSON.stringify({ key, txt })); } catch {}
   }
-  const el = $("#coachTxt"); if (el) el.textContent = txt;
+  const el = $("#coachTxt"); if (el) { el.textContent = txt; go.hidden = false; }
 }
 
 // ---------------------------------------------------------------------
@@ -461,7 +478,6 @@ function renderNow(view) {
     ${posts.map(p => {
       const pl = placeById(p.place);
       const legend = p.mine && (st.placeCount[pl.id] || 0) >= 2;
-      const kud = 2 + (hash(p.id) % 14) + (state.kudos.includes(p.id) ? 1 : 0);
       return `<div class="post">
         <div class="head">${avatar(p.person, 40, p.mine ? "" : `data-person="${p.person.id}"`)}<div style="flex:1;min-width:0"><div><b>${esc(N(p.person.name))}</b> <span class="muted">${t("now.was")}</span> <b>${esc(N(pl.name))}</b></div><div class="what">${icon("pin", 13)} ${esc(N(pl.hood))}, ${ago(p.ts)}</div></div></div>
         <div class="body">
@@ -469,7 +485,7 @@ function renderNow(view) {
           ${p.photo ? `<img class="photo" src="${p.photo}" alt="">` : ""}
           ${p.note ? `<div class="note">${esc(p.note)}</div>` : ""}
           ${legend ? `<div class="legend">${t("now.legend")}</div>` : ""}
-          <div class="foot"><button class="chip kudos ${state.kudos.includes(p.id) ? "on" : ""}" data-kudo="${p.id}">${icon("heart", 15)} ${t("now.kudos")} ${kud}</button>${p.mine ? "" : `<button class="chip" data-same="${pl.id}">${t("now.wantGo")}</button>`}</div>
+          <div class="foot">${reactionHTML(p.id)}${p.mine ? "" : `<button class="chip" data-same="${pl.id}">${t("now.wantGo")}</button>`}</div>
         </div></div>`;
     }).join("")}
   </div>`;
@@ -481,16 +497,42 @@ function renderNow(view) {
   });
   $$("[data-crew]", view).forEach(b => b.onclick = () => openCrewMatch(events.find(e => e.id === b.dataset.crew)));
   $$("[data-open-crew]", view).forEach(b => b.onclick = () => openCrewChat(b.dataset.openCrew));
-  $$("[data-kudo]", view).forEach(b => b.onclick = () => {
-    const id = b.dataset.kudo;
-    state.kudos = state.kudos.includes(id) ? state.kudos.filter(x => x !== id) : [...state.kudos, id];
-    save(); renderKeepScroll();
-  });
+  bindReactions(view);
   $$("[data-follow]", view).forEach(b => b.onclick = () => { toggleFollow(b.dataset.follow); renderKeepScroll(); });
   $$("[data-person]", view).forEach(b => b.onclick = () => openPerson(b.dataset.person));
   $$("[data-same]", view).forEach(b => b.onclick = () => askSkopi(t("now.wantQ", { p: N(placeById(b.dataset.same).name) })));
   $("#findFr")?.addEventListener("click", () => openFriends());
 }
+// Реакции како на Facebook: допри за избор од повеќе емоџиња
+function reactionHTML(id) {
+  const mine = state.reactions[id];
+  const h = hash(id);
+  const base = 2 + (h % 14);
+  const top = [REACTIONS[h % 6], REACTIONS[(h >> 3) % 6], mine].filter((x, i, a) => x && a.indexOf(x) === i).slice(0, 3);
+  return `<div class="react-wrap">
+    <button class="chip react-btn ${mine ? "on" : ""}" data-react="${id}">${mine ? `<span class="re">${mine}</span>` : icon("heart", 15)} ${t("react.btn")}</button>
+    <span class="react-sum"><span class="re-stack">${top.map(e => `<span>${e}</span>`).join("")}</span>${base + (mine ? 1 : 0)}</span>
+    <div class="react-pick" hidden>${REACTIONS.map((e, i) => `<button data-pick="${e}" style="animation-delay:${i * 30}ms">${e}</button>`).join("")}</div>
+  </div>`;
+}
+function bindReactions(root) {
+  $$("[data-react]", root).forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const pick = b.parentElement.querySelector(".react-pick");
+    const open = pick.hidden;
+    $$(".react-pick", root).forEach(x => (x.hidden = true));
+    pick.hidden = !open;
+  });
+  $$("[data-pick]", root).forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const id = b.closest(".react-wrap").querySelector("[data-react]").dataset.react;
+    state.reactions[id] = state.reactions[id] === b.dataset.pick ? undefined : b.dataset.pick;
+    if (!state.reactions[id]) delete state.reactions[id];
+    save(); renderKeepScroll();
+  });
+}
+document.addEventListener("click", () => $$(".react-pick").forEach(x => (x.hidden = true)));
+
 function avatarsStack(seed) {
   const ppl = allPeople(); let out = "";
   for (let i = 0; i < 3; i++) out += avatar(ppl[(hash(seed) + i * 3) % ppl.length], 24);
@@ -788,7 +830,7 @@ function renderMe(view) {
   const st = stats();
   const u = state.user;
   const league = LEAGUE.map(([n, s]) => [n, s + (n === u.hood ? st.visits * 10 : 0)]);
-  if (u.hood && !league.find(l => l[0] === u.hood)) league.push([u.hood, st.visits * 10]);
+  if (u.hood && u.hood !== "other" && !league.find(l => l[0] === u.hood)) league.push([u.hood, st.visits * 10]);
   league.sort((a, b) => b[1] - a[1]);
   const max = league[0][1];
   const friends = allPeople().filter(p => state.following.includes(p.id));
@@ -797,7 +839,7 @@ function renderMe(view) {
       ${avatar(me(), 76)}
       <div style="flex:1;min-width:0">
         <div class="h1">${esc(u.name)}</div>
-        <div class="muted" style="font-size:13px;margin-top:2px">${icon("pin", 13)} ${esc(N(u.hood || "-"))}</div>
+        <div class="muted" style="font-size:13px;margin-top:2px">${icon("pin", 13)} ${esc(hoodLabel(u.hood))}</div>
         <div class="tags">${u.interests.map(i => `<span class="tag">${esc(interestLabel(i))}</span>`).join("")}</div>
       </div>
     </div>
@@ -821,7 +863,7 @@ function renderMe(view) {
 
     <div class="sec-label">${t("me.league")}</div>
     <ul class="league">${league.map(([n, s], k) => `<li class="${n === u.hood ? "me-hood" : ""}"><span class="rank">${k + 1}</span><span class="lname">${esc(N(n))}</span><span class="lbar"><i style="width:${s / max * 100}%"></i></span><b style="width:40px;text-align:right">${s}</b></li>`).join("")}</ul>
-    ${u.hood ? `<p class="muted" style="font-size:12.5px;margin-top:8px">${t("me.leagueNote", { h: `<b style="color:var(--sun)">${esc(N(u.hood))}</b>` })}</p>` : ""}
+    ${u.hood && u.hood !== "other" ? `<p class="muted" style="font-size:12.5px;margin-top:8px">${t("me.leagueNote", { h: `<b style="color:var(--sun)">${esc(N(u.hood))}</b>` })}</p>` : ""}
 
     <div class="sec-label">${t("me.lang")}</div>
     <div class="seg wide">${[["mk", "Македонски"], ["en", "English"]].map(([l, n]) => `<button data-lang="${l}" class="${LANG === l ? "on" : ""}">${n}</button>`).join("")}</div>
@@ -859,7 +901,7 @@ function openEditProfile() {
       <div class="sec-label">${t("ed.name")}</div>
       <input class="field" id="edName" value="${esc(d.name)}" maxlength="20">
       <div class="sec-label">${t("ed.hood")}</div>
-      <div class="chips small">${HOODS.map(([h]) => `<button class="chip ${d.hood === h ? "on" : ""}" data-h="${esc(h)}">${esc(N(h))}</button>`).join("")}</div>
+      <div class="chips small">${hoodChips(d.hood)}</div>
       <div class="sec-label">${t("ed.interests")}</div>
       <div class="interest-grid">${INTERESTS.map(i => `<button class="interest ${d.interests.includes(i.id) ? "on" : ""}" data-i="${i.id}">${esc(i[LANG] || i.mk)}</button>`).join("")}</div>
       <button class="btn grad block" id="edSave" style="margin-top:18px" ${d.name.trim() && d.interests.length === 3 ? "" : "disabled"}>${t("ed.save")}</button>`);
