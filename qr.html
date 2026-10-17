@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="mk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QR налепници</title>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Manrope:wght@600;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --ink: #0E0E12; --paper: #F6F2EA; }
+    * { box-sizing: border-box; margin: 0; }
+    body { font-family: Manrope, sans-serif; background: #ddd; color: var(--ink); padding: 12px; }
+    .bar { max-width: 900px; margin: 0 auto 16px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .bar input { flex: 1; min-width: 260px; padding: 10px 12px; border-radius: 10px; border: 1px solid #aaa; font: inherit; }
+    .bar button { padding: 10px 16px; border-radius: 999px; border: 0; background: var(--ink); color: var(--paper); font-weight: 800; cursor: pointer; }
+    .grid { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .tag { background: var(--paper); border-radius: 18px; padding: 16px; text-align: center; border: 3px solid var(--ink); break-inside: avoid; }
+    .brand { font-family: Unbounded, sans-serif; font-weight: 900; font-size: 13px; }
+    .brand span { background: linear-gradient(135deg, #FFD23F, #FF5A36 45%, #7B61FF); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .qr { margin: 10px auto; width: 100%; max-width: 150px; aspect-ratio: 1; }
+    .qr svg { width: 100%; height: 100%; }
+    .name { font-family: Unbounded, sans-serif; font-weight: 700; font-size: 14px; line-height: 1.15; }
+    .hint { font-size: 11px; font-weight: 800; margin-top: 6px; }
+    @media print { body { background: #fff; padding: 0; } .bar { display: none; } .grid { gap: 8px; } }
+    @media (max-width: 600px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  </style>
+</head>
+<body>
+  <div class="bar">
+    <b>Адреса на апликацијата:</b>
+    <input id="base">
+    <button onclick="draw()">Освежи</button>
+    <button onclick="print()">Печати</button>
+  </div>
+  <div class="grid" id="grid"></div>
+  <script src="lib/qrcode.js"></script>
+  <script src="js/data.js"></script>
+  <script>
+    const baseIn = document.getElementById("base");
+    baseIn.value = location.href.replace(/qr\.html.*$/, "");
+    function draw() {
+      const base = baseIn.value.trim().replace(/\/?$/, "/");
+      document.getElementById("grid").innerHTML = PLACES.map(p => {
+        const q = qrcode(0, "M"); q.addData(`${base}?place=${p.id}`); q.make();
+        return `<div class="tag"><div class="brand">СКОПЈЕ <span>WRAPPED</span></div>
+          <div class="qr">${q.createSvgTag({ cellSize: 4, margin: 0, scalable: true })}</div>
+          <div class="name">${p.name}</div><div class="hint">Скенирај и обој го Скопје ✦</div></div>`;
+      }).join("");
+    }
+    draw();
+  </script>
+</body>
+</html>

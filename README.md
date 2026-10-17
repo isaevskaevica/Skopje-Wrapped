@@ -42,3 +42,33 @@ The cards are designed to be shared on social media, turning personal experience
 Skopje Wrapped aims to connect young people with culture, local artists, and one another. Through technology, personalization, and shared experiences, the platform encourages a more active cultural life and a deeper connection with the city.
 
 **Explore more. Experience culture. Discover your Skopje.**
+
+---
+
+## Prototype — AI Hackathon HACKTOBERFEST 2026 · Base42
+
+Built in one day for the **FIX MY CITY** theme. A mobile-first web app, no build step.
+
+**Live demo flow:** scan a QR sticker → Skopi tells the story of the place → the zone on your map lights up → open your Wrapped and get an AI-written cultural persona + an Instagram card.
+
+### Open-source AI
+Skopi runs on **open-weight models (Llama) via the Groq API**. Skopi only answers from our own knowledge base of places and events (`js/data.js`), so it doesn't invent events or history. Without a key or internet the app falls back to offline answers, so the demo never breaks.
+
+### Run it
+1. Open the app (GitHub Pages, or locally: `python3 -m http.server` in this folder → http://localhost:8000).
+2. **Профил → AI поставки** → paste a free Groq API key (https://console.groq.com/keys) → **Зачувај и тестирај**. The key is stored only in your browser.
+3. Open `qr.html` to print QR stickers. Each QR opens `?place=<id>` and checks you in automatically.
+
+### Structure
+```
+index.html      the app
+qr.html         printable QR stickers
+css/style.css   styles
+js/data.js      Skopi's knowledge: places, stories, events (edit here!)
+js/ai.js        Skopi: Groq calls + offline fallback
+js/app.js       map, check-in, feed, chat, Wrapped, profile
+lib/            Leaflet, html5-qrcode, html2canvas, qrcode-generator (vendored)
+```
+
+### License
+MIT
