@@ -5,6 +5,8 @@
 **Live app:** https://skopjewrapped.vercel.app/
 Open it on your phone. No install, no sign-up.
 
+**Demo video:** https://youtube.com/shorts/OT3f29CtizU
+
 Built at **AI Hackathon HACKTOBERFEST 2026 · Base42 · FIX MY CITY**.
 
 ---
