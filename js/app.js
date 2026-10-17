@@ -945,4 +945,11 @@ function handlePending() {
   if (location.hash === "#feed") location.hash = "#now";
   render();
   handlePending();
+  // Ако апликацијата е на Vercel со GROQ_API_KEY, Скопи користи AI за секого
+  AI.init().then(ok => {
+    if (!ok || !state.user || !$("#sheet").hidden) return;
+    try { localStorage.removeItem("sw_coach"); } catch {}
+    const tab = (location.hash || "#map").slice(1);
+    if (["map", "skopi", "me"].includes(tab)) render();
+  });
 })();

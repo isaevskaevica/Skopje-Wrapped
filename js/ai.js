@@ -33,7 +33,19 @@ const AI = (() => {
     set visionModel(v) { store.set("sw_vision_model", v); },
   };
 
-  const hasKey = () => cfg.key.startsWith("gsk_") || cfg.key.length > 20;
+  const localKey = () => cfg.key.startsWith("gsk_") || cfg.key.length > 20;
+  // Сервер (Vercel функција /api/chat) што го чува клучот, за AI да работи за секого
+  let proxyOk = false;
+  const hasKey = () => localKey() || proxyOk;
+  async function init() {
+    if (localKey()) return false;
+    try {
+      const r = await fetch("api/chat", { method: "GET" });
+      const j = r.ok ? await r.json() : null;
+      proxyOk = !!(j && j.ok);
+    } catch { proxyOk = false; }
+    return proxyOk;
+  }
 
   const SKOPI_SYSTEM = `Ти си Скопи — AI културен другар во апликацијата „Скопје Wrapped“.
 Зборуваш на македонски, топло и духовито, како пријателски локалец од Скопје. Пишуваш кратко (2–4 реченици освен ако не те прашаат повеќе), без маркдаун наслови.
@@ -60,12 +72,19 @@ const AI = (() => {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 20000);
     try {
-      const r = await fetch(`${API}/chat/completions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${cfg.key}` },
-        body: JSON.stringify(body),
-        signal: ctrl.signal,
-      });
+      const r = localKey()
+        ? await fetch(`${API}/chat/completions`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${cfg.key}` },
+            body: JSON.stringify(body),
+            signal: ctrl.signal,
+          })
+        : await fetch("api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+            signal: ctrl.signal,
+          });
       if (!r.ok) {
         const txt = await r.text();
         throw new Error(`groq ${r.status}: ${txt.slice(0, 200)}`);
@@ -118,7 +137,7 @@ const AI = (() => {
       ], { maxTokens: 300 });
     } catch (e) {
       console.warn("AI fallback", e);
-      return LANG === "en" ? `Welcome to ${N(place.name)}, ${user?.name || ""}! (Skopi is offline. Add a Groq key in Profile for stories in English.)\n\n${place.story}` : `${user?.name ? user.name + ", д" : "Д"}обредојде во ${place.name}! ${place.story}`;
+      return LANG === "en" ? `Welcome to ${N(place.name)}, ${user?.name || ""}! ${place.story}` : `${user?.name ? user.name + ", д" : "Д"}обредојде во ${place.name}! ${place.story}`;
     }
   }
 
@@ -153,7 +172,7 @@ const AI = (() => {
     const price = e => e.price ? `${e.price} ${en ? "MKD" : "ден."}` : (en ? "free" : "бесплатно");
     return (en ? "Here's what I'd suggest:\n" : "Еве што би ти предложил:\n")
       + pick.map(e => `• ${e.title} — ${e.dateLabel} ${en ? "at" : "во"} ${e.time}, ${PN(PLACES.find(x => x.id === e.place))} (${price(e)})`).join("\n")
-      + (en ? "\n\n(Skopi is offline. Add a Groq key in Profile for smart suggestions.)" : "\n\n(Скопи е во офлајн режим. Внеси Groq клуч во Профил за паметни предлози.)");
+      + (en ? "\n\n(Quick picks: Skopi's AI is offline right now.)" : "\n\n(Брзи предлози: AI-от на Скопи моментално не е достапен.)");
   }
 
   // ---------- 3. Фото → активност (vision) ----------
@@ -249,5 +268,5 @@ const AI = (() => {
     }
   }
 
-  return { cfg, hasKey, testConnection, placeStory, skopiReply, photoActivity, coach, wrapped, icebreaker, memberReply };
+  return { cfg, hasKey, init, mode: () => (localKey() ? "local" : proxyOk ? "server" : "offline"), testConnection, placeStory, skopiReply, photoActivity, coach, wrapped, icebreaker, memberReply };
 })();
