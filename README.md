@@ -1,74 +1,99 @@
 # Skopje Wrapped
 
-**Discover Skopje. Connect through culture. Create your own story.**
+**Strava for culture in Skopje.** Every exhibition, concert and show you visit lights up your map of the city, and Skopi, your AI culture buddy, tells you where to go next.
 
-Skopje Wrapped is an interactive platform that makes the cultural life of Skopje more accessible, engaging, and social. Through a personalized map, cultural challenges, and monthly statistics, users track their visits to exhibitions, concerts, theatres, cinemas, galleries, and other cultural spaces.
+**Live app:** https://skopjewrapped.vercel.app/
+Open it on your phone. No install, no sign-up.
 
-The platform encourages young people to explore the city, discover new places, and connect with others who share their interests.
-
-## Key Features
-
-- **Personal Cultural Map** — Discover new locations and track the areas of Skopje you have explored.
-- **Profile & Statistics** — Keep track of your visits, cultural interests, and personal achievements.
-- **Cultural Crews** — Meet people with similar interests and organize cultural outings together.
-- **Neighborhood Challenges** — Explore different parts of the city and earn badges through themed activities.
-- **Monthly Wrapped** — Receive personalized visual cards highlighting your cultural experiences, ready to share on social media.
-- **Skopi AI** — Your personal cultural guide, offering event recommendations, stories about local places, and help finding company for your next outing.
-
-## Skopi — Your AI Cultural Guide
-
-Skopi is an intelligent assistant integrated into the platform, designed to help every user experience Skopje in their own way.
-
-With Skopi, you can:
-
-- Discover cultural events based on your interests, budget, and availability.
-- Connect with people who share your interests and organize cultural outings together.
-- Explore stories about historical landmarks, art, and architecture.
-- Receive personalized challenges and recommendations for discovering new neighborhoods.
-- Generate unique, personalized texts for your monthly Wrapped.
-
-## Monthly Wrapped
-
-At the beginning of each month, users receive a personalized recap of their cultural activities through three visual cards.
-
-1. **My Month** — Visited places, explored neighborhoods, and cultural achievements.
-2. **My Map** — A visual representation of the areas of the city they have explored.
-3. **My Cultural Identity** — A personalized cultural profile, favorite categories, and most-visited places.
-
-The cards are designed to be shared on social media, turning personal experiences into inspiration for others to discover Skopje's cultural scene.
-
-## Our Mission
-
-Skopje Wrapped aims to connect young people with culture, local artists, and one another. Through technology, personalization, and shared experiences, the platform encourages a more active cultural life and a deeper connection with the city.
-
-**Explore more. Experience culture. Discover your Skopje.**
+Built at **AI Hackathon HACKTOBERFEST 2026 · Base42 · FIX MY CITY**.
 
 ---
 
-## Prototype — AI Hackathon HACKTOBERFEST 2026 · Base42
+## The problem
 
-Built in one day for the **FIX MY CITY** theme. A mobile-first web app, no build step.
+Skopje has galleries, concerts, theatres and cultural spaces, but many young people don't know where to go or don't have anyone to go with, and rarely leave their own neighbourhood. Venues stay half-empty, and the city has no data on which neighbourhoods lack cultural life.
 
-**Live demo flow:** scan a QR sticker → Skopi tells the story of the place → the zone on your map lights up → open your Wrapped and get an AI-written cultural persona + an Instagram card.
+## The solution
 
-### Open-source AI
-Skopi runs on **open-weight models (Llama) via the Groq API**. Skopi only answers from our own knowledge base of places and events (`js/data.js`), so it doesn't invent events or history. Without a key or internet the app falls back to offline answers, so the demo never breaks.
+A mobile web app that turns culture into a shared game:
 
-### Run it
-1. Open the app (GitHub Pages, or locally: `python3 -m http.server` in this folder → http://localhost:8000).
-2. **Профил → AI поставки** → paste a free Groq API key (https://console.groq.com/keys) → **Зачувај и тестирај**. The key is stored only in your browser.
-3. Open `qr.html` to print QR stickers. Each QR opens `?place=<id>` and checks you in automatically.
+- **Check in** by scanning a QR sticker at a cultural venue, or just take a photo and the AI recognises the activity.
+- **Personal map** of Skopje that lights up as you explore new neighbourhoods.
+- **Skopi, the AI buddy** that suggests what to do tonight based on your budget, time and interests, and tells you the story of the place you're standing in.
+- **Weekly challenge** from Skopi: an event in a neighbourhood you haven't visited yet.
+- **Crews:** get matched with 4–6 people with similar interests, with a group chat and a meet-up point.
+- **Friends:** follow people, react to their outings, invite them to events with a QR code or link.
+- **Monthly Wrapped:** an AI-written story of your month with a cultural persona and a card to share on Instagram.
+- **Neighbourhood League** and badges.
+- **Macedonian and English.**
 
-### Structure
+## Skopi: how the AI works
+
+Skopi runs on **open-weight models (Llama) via the Groq API**:
+
+| Feature | Model |
+| --- | --- |
+| Chat, place stories, weekly challenge, Wrapped texts, crew chat | Llama 3.3 70B |
+| Recognising a photo of a cultural activity | Llama 4 Scout (vision) |
+
+Skopi **does not invent events or facts**. It only answers from our own knowledge base of places, stories and events (`js/data.js`). If there is no API key or no internet, the app falls back to offline answers, so it never breaks.
+
+## Tech stack
+
+Plain HTML, CSS and JavaScript, no build step.
+
+- [MapLibre GL JS](https://maplibre.org/) with the CARTO Positron basemap (OpenStreetMap data)
+- [html5-qrcode](https://github.com/mebjas/html5-qrcode) for scanning QR codes
+- [html2canvas](https://html2canvas.hertzen.com/) for the shareable Wrapped card
+- [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) for venue stickers and invite codes
+- [Groq API](https://console.groq.com/) for open-weight LLM inference
+- Hosted on GitHub Pages
+- Hosted on [Vercel](https://vercel.com/), deployed automatically from this repository
+
+## Run it locally
+
+```bash
+git clone https://github.com/milajovanovska/Skopje-Wrapped.git
+cd Skopje-Wrapped
+python3 -m http.server 8000
 ```
-index.html      the app
-qr.html         printable QR stickers
-css/style.css   styles
-js/data.js      Skopi's knowledge: places, stories, events (edit here!)
-js/ai.js        Skopi: Groq calls + offline fallback
-js/app.js       map, check-in, feed, chat, Wrapped, profile
-lib/            Leaflet, html5-qrcode, html2canvas, qrcode-generator (vendored)
+
+Then open http://localhost:8000
+
+### AI key (optional)
+
+Get a free key at https://console.groq.com/keys. Then either:
+
+- open the app once with `?key=gsk_YOUR_KEY` at the end of the URL (the key is saved only in that browser), or
+- copy `js/config.local.example.js` to `js/config.local.js` and put your key there. This file is in `.gitignore` and is never committed.
+
+## Project structure        
+                                                                                                                  ndex.html the app
+```
+index.html       the app
+qr.html          printable QR stickers for venues
+css/style.css    styles
+js/data.js       Skopi's knowledge: places, stories, events, neighbourhoods
+js/ai.js         Skopi: Groq calls + offline fallback
+js/app.js        map, check-in, Happening feed, crews, chat, Wrapped, profile
+js/i18n.js       Macedonian and English texts
+js/icons.js      SVG icons
+lib/             vendored libraries
 ```
 
-### License
+## Privacy
+
+- All user data in the prototype stays in the user's own browser.
+- Skopi never shares other users' locations and never comments on how people look.
+- Crews are only groups of 4–6 people, meeting at public cultural venues.
+
+## Team
+
+- Sara Andonovska
+- Mila Jovanovska
+- Evica Isaevska
+
+## License
+
 MIT
+
