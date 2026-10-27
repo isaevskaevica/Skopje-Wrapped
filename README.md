@@ -2,12 +2,14 @@
 
 **Strava for culture in Skopje.** Every exhibition, concert and show you visit lights up your map of the city, and Skopi, your AI culture buddy, tells you where to go next.
 
+🏆 **Winner of AI Hackathon HACKTOBERFEST 2026 · Base42 · FIX MY CITY**
+
 **Live app:** https://skopjewrapped.vercel.app/
 Open it on your phone. No install, no sign-up.
 
 **Demo video:** https://youtube.com/shorts/OT3f29CtizU
 
-Built at **AI Hackathon HACKTOBERFEST 2026 · Base42 · FIX MY CITY**.
+> This is a hackathon prototype. Friends, crews and events in the app are sample data.
 
 ---
 
@@ -38,7 +40,9 @@ Skopi runs on **open-weight models (Llama) via the Groq API**:
 | Chat, place stories, weekly challenge, Wrapped texts, crew chat | Llama 3.3 70B |
 | Recognising a photo of a cultural activity | Llama 4 Scout (vision) |
 
-Skopi **does not invent events or facts**. It only answers from our own knowledge base of places, stories and events (`js/data.js`). If there is no API key or no internet, the app falls back to offline answers, so it never breaks.
+Skopi **does not invent events or facts**. It only answers from our own knowledge base of places, stories and events (`js/data.js`).
+
+The API key is never sent to the browser. The app calls a small serverless function (`api/chat.js`) on Vercel, which adds the key and forwards the request to Groq. If the AI is unavailable, the app falls back to offline answers, so it never breaks.
 
 ## Tech stack
 
@@ -49,10 +53,9 @@ Plain HTML, CSS and JavaScript, no build step.
 - [html2canvas](https://html2canvas.hertzen.com/) for the shareable Wrapped card
 - [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) for venue stickers and invite codes
 - [Groq API](https://console.groq.com/) for open-weight LLM inference
-- Hosted on GitHub Pages
 - Hosted on [Vercel](https://vercel.com/), deployed automatically from this repository
 
-## Run it locally
+## Run it yourself
 
 ```bash
 git clone https://github.com/milajovanovska/Skopje-Wrapped.git
@@ -60,28 +63,33 @@ cd Skopje-Wrapped
 python3 -m http.server 8000
 ```
 
-Then open http://localhost:8000
+Then open http://localhost:8000. Without an AI key, Skopi runs in offline mode.
 
-### AI key (optional)
+### Adding an AI key
 
-Get a free key at https://console.groq.com/keys. Then either:
+Get a free key at https://console.groq.com/keys. Then:
 
-- open the app once with `?key=gsk_YOUR_KEY` at the end of the URL (the key is saved only in that browser), or
-- copy `js/config.local.example.js` to `js/config.local.js` and put your key there. This file is in `.gitignore` and is never committed.
+- **On Vercel:** add an environment variable `GROQ_API_KEY` (type Secret) and redeploy. AI then works for every visitor.
+- **Locally:** copy `js/config.local.example.js` to `js/config.local.js` and put your key there. This file is in `.gitignore` and is never committed.
 
-## Project structure        
-                                                                                                                  ndex.html the app
+Never commit an API key to the repository.
+
+## Project structure
+
 ```
 index.html       the app
 qr.html          printable QR stickers for venues
+api/chat.js      serverless function that keeps the AI key on the server
 css/style.css    styles
 js/data.js       Skopi's knowledge: places, stories, events, neighbourhoods
-js/ai.js         Skopi: Groq calls + offline fallback
+js/ai.js         Skopi: AI calls + offline fallback
 js/app.js        map, check-in, Happening feed, crews, chat, Wrapped, profile
 js/i18n.js       Macedonian and English texts
 js/icons.js      SVG icons
 lib/             vendored libraries
 ```
+
+To add real places or events, edit `js/data.js`. Each QR sticker opens `?place=<id>` and checks you in automatically.
 
 ## Privacy
 
@@ -98,4 +106,3 @@ lib/             vendored libraries
 ## License
 
 MIT
-
